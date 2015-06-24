@@ -11,7 +11,6 @@ import qimage2ndarray as qim
 IP = "bobby.local"
 PORT = 9559
 CameraID = 0
-faces = []
 
 cascPath = "/home/sara-adams/Documents/Research/Webcam-Face-Detect-master/haarcascade_frontalface_default.xml"
 faceCascade = cv2.CascadeClassifier(cascPath)
@@ -41,6 +40,7 @@ class ImageWidget(QWidget):
         self._alImage = None
         self._registerImageClient(IP, PORT)
         self.startTimer(100)
+        self.faces = []
 
 
     def _registerImageClient(self, IP, PORT):
@@ -85,15 +85,15 @@ class ImageWidget(QWidget):
             self.convertToCV()
 
             grayscale = cv2.cvtColor(self._array, cv2.COLOR_BGR2GRAY)
-            faces = faceCascade.detectMultiScale(grayscale, scaleFactor = 1.3, minNeighbors = 4, minSize = (15,15), flags = cv2.cv.CV_HAAR_SCALE_IMAGE)
-            faces = sorted(faces, key=my_cool_sort)
-            print faces
+            self.faces = faceCascade.detectMultiScale(grayscale, scaleFactor = 1.3, minNeighbors = 4, minSize = (15,15), flags = cv2.cv.CV_HAAR_SCALE_IMAGE)
+            self.faces = sorted(self.faces, key=my_cool_sort)
+            #print self.faces
 
-            if len(faces) > 0:
-                r = faces[0][1]
-                h = faces[0][3]
-                c = faces[0][0]
-                w = faces[0][2]
+            if len(self.faces) > 0:
+                r = self.faces[0][1]
+                h = self.faces[0][3]
+                c = self.faces[0][0]
+                w = self.faces[0][2]
 
                 self.track_window = (c,r,w,h)
                 roi = self._array[r:r+h, c:c+w]
@@ -137,7 +137,7 @@ class ImageWidget(QWidget):
         self._image = QImage(self._alImage[6], self._alImage[0], self._alImage[1], QImage.Format_RGB888)
         self._image = QImage.convertToFormat(self._image, QImage.Format_RGB32)
         self.count += 1
-        if self.count == 1 or len(faces) == 0:
+        if self.count == 1 or len(self.faces) == 0:
             self.face()
             cv2.imshow("nao", self._array)  #comment out from here
             k = cv2.waitKey(100) & 0xff
